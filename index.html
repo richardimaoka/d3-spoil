@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- Place your kit's code here -->
+    <script src="https://kit.fontawesome.com/57bd120ab3.js" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <style>svg {border-style: solid; width: 400px;} </style>
+  </head>
+  <body>  
+    <!-- Ready to use Font Awesome. Activate interlock. Dynotherms - connected. Infracells - up. Icons are go! -->
+    <i class="fas fa-camera"></i> <!-- this icon's 1) style prefix == fas and 2) icon name == camera -->
+    <i class="fas fa-camera"></i> <!-- using an <i> element to reference the icon -->
+    <span class="fas fa-camera"></span> <!-- using a <span> element to reference the icon -->
+    <div>
+      <svg id="svg1" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      </svg>
+      <svg id="svg2" viewBox="-100 -100 200 200" xmlns="http://www.w3.org/2000/svg">
+      </svg>
+    </div>
+  </body>
+  <script>
+    const width = 200, height = 200, radius = 30, nPoints = 6;
+    const nosted_nodes = { 
+      name: "outermost",
+      r: 50,
+      color: "green",
+      children: [
+        { name: "center",
+          r: 40,
+          children: [
+            {name: "営業", r: 10, color: "red"},
+            {name: "賃貸", r: 10, color: "red"},
+            {name: "経理", r: 10, color: "red"},
+            {name: "資産管理", r: 10, color: "red"},
+            {name: "商品開発", r: 10, color: "red"},    
+          ]
+        },
+        {r: 10, name: "賃貸募集", group: "賃貸募集", color: "blue"},
+        {r: 10, name: "清算", group: "清算", color: "blue"},
+        {r: 10, name: "債権債務", group: "債権債務", color: "blue"},
+        {r: 10, name: "物件管理", group: "物件管理", color: "blue"},      
+        {r: 10, name: "物件開発", group: "物件開発", color: "blue"},
+      ]
+    }
+ 
+    const root = d3.pack()
+      .size([width - 2, height - 2])
+      .padding(3)(
+        d3.hierarchy(nosted_nodes).sum(d => d.r)
+      );   
+                             
+    //const svg = d3.select("#svg1");   
+    const svg = d3.create("svg").attr("viewBox", [0, 0, width, height]);
+    const node = svg
+      .selectAll("g")
+      .data(d3.nest().key(d => d.height).entries(root.descendants()))
+      .join("g")
+      .selectAll("g")
+      .data(d => d.values)
+      .join("g")
+      //.attr("transform", d => `translate(${(d.x + 1)-width/2},${(d.y + 1)-width/2})`)
+      .attr("transform", d => `translate(${d.x + 1},${d.y + 1})`)
+      .append("circle")
+        .attr("r", d => d.r)
+        .attr("fill", d => {
+          return d.data.color;
+        });
+ 
+    
+   
+    const nodes = [
+      //services
+      {name: "center"},
+      {name: "分譲販売", group: "分譲販売"},
+      {name: "賃貸募集", group: "賃貸募集"},
+      {name: "清算", group: "清算"},
+      {name: "債権債務", group: "債権債務"},
+      {name: "物件管理", group: "物件管理"},      
+      {name: "物件開発", group: "物件開発"},
+      //teams
+      {name: "営業"},
+      {name: "賃貸"},
+      {name: "経理"},
+      {name: "資産管理"},
+      {name: "商品開発"},    
+      //external orgs
+      // {name: "広告代理店"},
+      // {name: "販売代理店"},
+      // {name: "決済機関"},
+      // {name: "管理会社"},
+      // {name: "施工会社"},    
+      // {name: "設計会社"},    
+    ];
+ 
+    node.datum(d => {
+      for (const element of nodes) {
+        if(element.name === d.data.name) {
+          element.r = d.r;
+          element.x = d.x;
+          element.y = d.y;
+          element.color = d.data.color;
+        }
+      }
+ 
+      return d;
+    });
+ 
+    const links = [
+      //center to team
+      { source: "center", target: "営業", distance: 20, width: 0.1},
+      { source: "center", target: "賃貸", distance: 20, width: 0.1},
+      { source: "center", target: "経理", distance: 20, width: 0.1},
+      { source: "center", target: "資産管理", distance: 20, width: 0.1},
+      { source: "center", target: "商品開発", distance: 20, width: 0.1},    
+      //service to team
+      { source: "分譲販売", target: "営業", distance: 20, width: 2 },
+      { source: "賃貸募集", target: "賃貸", distance: 20, width: 2 },
+      { source: "清算", target: "賃貸", distance: 20, width: 2 },
+      { source: "清算", target: "経理", distance: 20, width: 2 },
+      { source: "債権債務", target: "経理", distance: 20, width: 2 },
+      { source: "物件管理", target: "資産管理", distance: 20, width: 2 },
+      { source: "物件開発", target: "商品開発", distance: 20, width: 2 },
+      //service to external org
+      // { source: "分譲販売", target: "販売代理店", distance: 20, width: 2 },
+      // { source: "分譲販売", target: "広告代理店", distance: 20, width: 2 },
+      // { source: "賃貸募集", target: "広告代理店", distance: 20, width: 2 },
+      // { source: "賃貸募集", target: "販売代理店", distance: 20, width: 2 },
+      // { source: "債権債務", target: "決済機関", distance: 20, width: 2 },
+      // { source: "債権債務", target: "管理会社", distance: 20, width: 2 },
+      // { source: "物件管理", target: "管理会社", distance: 20, width: 2 },
+      // { source: "物件開発", target: "管理会社", distance: 20, width: 2 },
+      // { source: "物件開発", target: "施工会社", distance: 20, width: 2 },
+      // { source: "物件開発", target: "設計会社", distance: 20, width: 2 },
+    ];
+ 
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(n => n.name).distance(d => d.distance))
+        .force("charge", d3.forceManyBody())
+        .force("x", d3.forceX())
+        .force("y", d3.forceY());
+                                
+    const svg2 = d3.select("#svg2");
+    
+    const link = svg2.append("g")
+        .attr("stroke", "#999")
+        .attr("stroke-opacity", 0.6)
+      .selectAll("line")
+      .data(links)
+      .join("line")
+        .attr("stroke-width", d => d.width);
+ 
+    const node2 = svg2
+      .selectAll("circle")
+      .data(nodes)
+      .join("circle")
+        .attr("r", d => d.r )
+        .attr("fill", d => d.color );
+    
+    node2.append("title")
+        .text(d => d.name);
+     
+    simulation.on("tick", () => {
+      console.log("tick tick tick");
+      link
+          .attr("x1", d => d.source.x)
+          .attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x)
+          .attr("y2", d => d.target.y);
+ 
+      node2
+          .attr("cx", d => d.x)
+          .attr("cy", d => d.y);
+    });
+ 
+</script>
+</html>
